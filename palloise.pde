@@ -5,21 +5,21 @@ color bkgCol, fillCol, strokeCol;
 void setup() {
   //frameRate(1);
   //size(512,512);
-  size(1024,1024);
-  //fullScreen();
+  //size(1024,1024);
+  fullScreen();
   colorMode(HSB, 360, 255, 255, 255);
   ellipseMode(RADIUS);
   rectMode(RADIUS);
-  bkgCol = color(120, 255, 255); //white
-  fillCol = color(0, 0, 1, 48); //black
-  strokeCol = color(0, 0, 1, 0); //black-invisible
+  bkgCol = color(240, 255, 255);
+  fillCol = color(0, 0, 1, 48);
+  strokeCol = color(0, 0, 1, 32);
   background(bkgCol);
-  columns = 49;
+  columns = 9;
   rows = columns;
   //rows = 25;
   colOffset = width/(columns*2);
   rowOffset = height/(rows*2);
-  radiusFactor = 2;
+  radiusFactor = 1.2;
   radiusMax = colOffset * radiusFactor;
   //println("colOffset:", colOffset, " radiusMax:",radiusMax);
   seed1 = random(1000);
@@ -27,16 +27,16 @@ void setup() {
   noiseOffset1 = 0;
   noiseOffset2 = 0;
   noiseScale1 = 2;
-  noiseScale2 = 10;
-  noiseInc1 = 0.001;
-  noiseInc2 = 0.001;
+  noiseScale2 = 2;
+  noiseInc1 = 0.002;
+  noiseInc2 = 0.003;
 }
 
 void draw() {
-  float cycle = 10000;
+  float cycle = 1000;
   float sineWave = sin(map(frameCount % cycle, 0, cycle, 0, TWO_PI));
-  float bkgS = map(sineWave, -1, 1, 0, 255);
-  bkgCol = color (120, bkgS, 255);
+  float bkgS = map(sineWave, -1, 1, 128, 255);
+  bkgCol = color (240, 255, bkgS);
   background(bkgCol);
   for(int col = 0; col<columns; col++) {
     for(int row = 0; row<rows; row++) {
@@ -49,21 +49,24 @@ void draw() {
       float noise1 = noise(xseed1 + seed1 + noiseOffset1, yseed1 + seed1 + noiseOffset1); // value in range 0-1
       float noise2 = noise(xseed2 + seed2 + noiseOffset2, yseed2 + seed2 + noiseOffset2); // value in range 0-1
       float noise3 = noise(noise1, noise2); // Bonus noise!
-      float r = map(noise1, 0, 1, 0, radiusMax);
-      //float fillH = map(noise1, 0, 1, 0, 360);
-      float fillH = 300;
-      float fillS = map(noise3, 0, 1, 0, 255);
-      //float fillS = 0; 
-      float fillB = map(noise2, 0, 1, 0, 255);
-      fillCol = color(fillH, fillS, fillB, 48);
+      float rx = map(noise1, 0, 1, 0, radiusMax);
+      float ry = map(noise2, 0, 1, 0, radiusMax);
+      //float fillH = map(noise1, 0, 1, 0, 255);
+      float fillH = 0;
+      //float fillS = map(noise3, 0, 1, 0, 255);
+      float fillS = 255; 
+      float fillB = map(noise3, 0.25, 0.75, 0, 255);
+      //float fillA = map(noise1, 0, 1, 0, 255);
+      float fillA = 255;
+      fillCol = color(fillH, fillS, fillB,fillA);
       fill(fillCol);
       stroke(strokeCol);
       pushMatrix();
       translate(x, y);
       float angle = map(noise3, 0, 1, 0, TWO_PI);
       rotate(angle);
-      //ellipse(0, 0, r, r);
-      rect(0, 0, r, r);
+      ellipse(0, 0, rx, ry);
+      //rect(0, 0, rx, ry);
       popMatrix();
     }
   } 
