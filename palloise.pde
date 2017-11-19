@@ -4,33 +4,36 @@ color bkgCol, fillCol, strokeCol;
 
 void setup() {
   //frameRate(1);
+  //size(512,512);
   size(1024,1024);
-  colorMode(HSB, 255, 255, 255, 255);
+  //fullScreen();
+  colorMode(HSB, 360, 255, 255, 255);
   ellipseMode(RADIUS);
   rectMode(RADIUS);
   bkgCol = color(120, 255, 255); //white
   fillCol = color(0, 0, 1, 48); //black
   strokeCol = color(0, 0, 1, 0); //black-invisible
   background(bkgCol);
-  columns = 10;
+  columns = 49;
   rows = columns;
+  //rows = 25;
   colOffset = width/(columns*2);
   rowOffset = height/(rows*2);
-  radiusFactor = 1;
+  radiusFactor = 2;
   radiusMax = colOffset * radiusFactor;
   //println("colOffset:", colOffset, " radiusMax:",radiusMax);
   seed1 = random(1000);
   seed2 = random(1000);
   noiseOffset1 = 0;
   noiseOffset2 = 0;
-  noiseScale1 = 3;
-  noiseScale2 = 3;
+  noiseScale1 = 2;
+  noiseScale2 = 10;
   noiseInc1 = 0.001;
   noiseInc2 = 0.001;
 }
 
 void draw() {
-  float cycle = 4000;
+  float cycle = 10000;
   float sineWave = sin(map(frameCount % cycle, 0, cycle, 0, TWO_PI));
   float bkgS = map(sineWave, -1, 1, 0, 255);
   bkgCol = color (120, bkgS, 255);
@@ -47,15 +50,21 @@ void draw() {
       float noise2 = noise(xseed2 + seed2 + noiseOffset2, yseed2 + seed2 + noiseOffset2); // value in range 0-1
       float noise3 = noise(noise1, noise2); // Bonus noise!
       float r = map(noise1, 0, 1, 0, radiusMax);
-      //float fillH = map(noise1, 0, 1, 0, 255);
-      float fillH = 0;
-      //float fillS = map(noise3, 0, 1, 0, 255);
-      float fillS = 0; 
+      //float fillH = map(noise1, 0, 1, 0, 360);
+      float fillH = 300;
+      float fillS = map(noise3, 0, 1, 0, 255);
+      //float fillS = 0; 
       float fillB = map(noise2, 0, 1, 0, 255);
-      fillCol = color(fillH, fillS, fillB, 255);
+      fillCol = color(fillH, fillS, fillB, 48);
       fill(fillCol);
       stroke(strokeCol);
-      ellipse(x, y, r, r);
+      pushMatrix();
+      translate(x, y);
+      float angle = map(noise3, 0, 1, 0, TWO_PI);
+      rotate(angle);
+      //ellipse(0, 0, r, r);
+      rect(0, 0, r, r);
+      popMatrix();
     }
   } 
   noiseOffset1 += noiseInc1;
