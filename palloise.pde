@@ -16,7 +16,7 @@ void setup() {
   rows = columns;
   colOffset = width/(columns*2);
   rowOffset = height/(rows*2);
-  radiusFactor = 1.5;
+  radiusFactor = 1;
   radiusMax = colOffset * radiusFactor;
   //println("colOffset:", colOffset, " radiusMax:",radiusMax);
   seed1 = random(1000);
@@ -30,8 +30,9 @@ void setup() {
 }
 
 void draw() {
-  float sineWave = sin(radians(frameCount % 720));
-  float bkgS = map(sineWave, 0, 1, 0, 255);
+  float cycle = 4000;
+  float sineWave = sin(map(frameCount % cycle, 0, cycle, 0, TWO_PI));
+  float bkgS = map(sineWave, -1, 1, 0, 255);
   bkgCol = color (120, bkgS, 255);
   background(bkgCol);
   for(int col = 0; col<columns; col++) {
