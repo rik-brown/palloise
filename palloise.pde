@@ -5,21 +5,22 @@ color bkgCol, fillCol, strokeCol;
 void setup() {
   //frameRate(1);
   //size(512,512);
-  //size(1024,1024);
-  fullScreen();
+  size(1024,1024);
+  //fullScreen();
   colorMode(HSB, 360, 255, 255, 255);
   ellipseMode(RADIUS);
   rectMode(RADIUS);
   bkgCol = color(240, 255, 255);
   fillCol = color(0, 0, 1, 48);
   strokeCol = color(0, 0, 1, 32);
+  noStroke();
   background(bkgCol);
   columns = 9;
   rows = columns;
   //rows = 25;
   colOffset = width/(columns*2);
   rowOffset = height/(rows*2);
-  radiusFactor = 1.2;
+  radiusFactor = 1.5; // last:1.2
   radiusMax = colOffset * radiusFactor;
   //println("colOffset:", colOffset, " radiusMax:",radiusMax);
   seed1 = random(1000);
@@ -60,13 +61,17 @@ void draw() {
       float fillA = 255;
       fillCol = color(fillH, fillS, fillB,fillA);
       fill(fillCol);
-      stroke(strokeCol);
+      //stroke(strokeCol);
       pushMatrix();
       translate(x, y);
       float angle = map(noise3, 0, 1, 0, TWO_PI);
       rotate(angle);
       ellipse(0, 0, rx, ry);
-      //rect(0, 0, rx, ry);
+      fill(bkgCol);
+      noStroke();
+      triangle(0, -ry, (rx*0.866), (ry*0.5) ,-(rx*0.866), (ry*0.5));
+      //rect(0, 0, rx*0.5, ry*0.5);
+      //ellipse(0, 0, ry*0.5, ry*0.5);
       popMatrix();
     }
   } 
