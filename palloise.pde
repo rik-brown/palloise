@@ -15,12 +15,12 @@ void setup() {
   strokeCol = color(0, 0, 1, 32);
   noStroke();
   background(bkgCol);
-  columns = 9;
+  columns = 49;
   rows = columns;
   //rows = 25;
   colOffset = width/(columns*2);
   rowOffset = height/(rows*2);
-  radiusFactor = 1.5; // last:1.2
+  radiusFactor = 2; // last:1.2
   radiusMax = colOffset * radiusFactor;
   //println("colOffset:", colOffset, " radiusMax:",radiusMax);
   seed1 = random(1000);
@@ -66,9 +66,9 @@ void draw() {
       translate(x, y);
       float angle = map(noise3, 0, 1, 0, TWO_PI);
       rotate(angle);
-      ellipse(0, 0, rx, ry);
-      fill(bkgCol);
-      noStroke();
+      //ellipse(0, 0, rx, ry);
+      //fill(bkgCol);
+      //noStroke();
       triangle(0, -ry, (rx*0.866), (ry*0.5) ,-(rx*0.866), (ry*0.5));
       //rect(0, 0, rx*0.5, ry*0.5);
       //ellipse(0, 0, ry*0.5, ry*0.5);
