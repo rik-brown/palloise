@@ -7,20 +7,24 @@ int columns, rows;
 float colOffset, rowOffset, noiseScale1, noiseScale2, xseed1, yseed2, seed1, seed2, noiseOffset1, noiseOffset2, noiseInc1, noiseInc2, radiusFactor, radiusMax;
 color bkgCol, fillCol, strokeCol, fillCol2;
 
+int batch = 1;
+
 String applicationName = "palloise";
-String batchName = "batch-001.00"; // Used to define the output folder
+String batchName = String.valueOf(nf(batch,3)); // Used to define the output folder
 String pathName;
 String screendumpPath; // Name & location of saved output (final image)
 String screendumpPathPDF; // Name & location of saved output (pdf file)
 String framedumpPath; // Name & location of saved output (individual frames)
 String videoPath; // Name & location of video output (.mp4 file)
 
-boolean makePDF = false;
-boolean savePNG = false;
-boolean makeMPEG = false;
+boolean makePDF = true;
+boolean savePNG = true;
+boolean makeMPEG = true;
 
-int maxFrames = 100;
-int frameCounter;
+int maxFrames = 10; //Total number of frames before exiting/making video
+int frameCounter;    //Starts at maxFrames and counts down
+
+PrintWriter logfile;    // Object for writing to the settings logfile
 
 void setup() {
   //frameRate(1);
@@ -52,6 +56,13 @@ void setup() {
   noiseInc1 = 0.002;
   noiseInc2 = 0.005;
   getReady();
+  if (makeMPEG) {
+    videoExport = new VideoExport(this, videoPath + ".mp4");
+    videoExport.setFrameRate(30);
+    videoExport.setQuality(70, 128);
+    videoExport.setDebugging(false);
+    videoExport.startMovie();
+  }
 }
 
 void draw() {
@@ -107,21 +118,64 @@ void draw() {
   if (makeMPEG) {videoExport.saveFrame();} // If in MPEG mode, save one frame per draw cycle to the file
 }
 
+// prepares pathnames for various file outputs
 void getReady() {
   frameCounter = maxFrames;
   pathName = "../../output/" + applicationName + "/" + batchName + "/" + String.valueOf(width) + "x" + String.valueOf(height) + "/"; //local
-  screendumpPath = pathName + "/png/" + batchName + "-" + iterationNum + ".png";
+  screendumpPath = pathName + "/png/" + applicationName + "-" + batchName + "-" + timeStamp() + ".png";
   //screendumpPath = "../output.png"; // For use when running from local bot
-  screendumpPathPDF = pathName + "/pdf/" + batchName + "-" + iterationNum + ".pdf";
-  videoPath = pathName + "/" + batchName;
-
-  output = createWriter(pathName + "/settings/" + batchName + "-" + iterationNum +".settings.log"); //Open a new settings logfile
+  screendumpPathPDF = pathName + "/pdf/" + applicationName + "-" + batchName + "-" + timeStamp() + ".pdf";
+  videoPath = pathName + "/mpg/" + applicationName + "-" + batchName + "-" + timeStamp();
+  logfile = createWriter(pathName + "/settings/" + applicationName + "-" + batchName + timeStamp() + ".settings.log"); //Open a new settings logfile
+  logStart();
   if (makePDF) {beginRecord(PDF, screendumpPathPDF);}
 }
 
+void logStart() {
+  logfile.println(screendumpPath);
+  logfile.println("maxFrames = " + maxFrames);
+  logfile.println("columns = " + columns);
+  logfile.println("rows = " + rows);
+  logfile.println("radiusFactor = " + radiusFactor);
+  logfile.println("seed1 = " + seed1);
+  logfile.println("seed2 = " + seed2 );
+  logfile.println("noiseOffset1 = " + noiseOffset1);
+  logfile.println("noiseOffset2 = " + noiseOffset2);
+  logfile.println("noiseScale1 = " + noiseScale1);
+  logfile.println("noiseScale2 = " + noiseScale2);
+  logfile.println("noiseInc1 = " + noiseInc1);
+  logfile.println("noiseInc2 = " + noiseInc2);  
+}
+
+void logEnd() {
+  logfile.flush();
+  logfile.close(); //Flush and close the settings file
+}
+
+
+// saves an image of the final frame, closes any pdf & mpeg files and exits
 void shutdown() {
   if (savePNG) {saveFrame(screendumpPath);} // Save an image of how the colony looked when it was terminated
-  if (gs.makePDF) {endRecord();} // If I'm in PDF-mode, complete & close the file
+  if (makePDF) {endRecord();} // If I'm in PDF-mode, complete & close the file
   if (makeMPEG) {videoExport.endMovie();} // If in MPEG mode, complete & close the file
+  logEnd();
   exit();
+}
+
+//returns a string with the date & time in the format 'yyyymmdd-hhmmss'
+String timeStamp() {
+  int sec = second();
+  int min = minute();
+  int hr = hour();
+  int day = day();
+  int mon = month();
+  int yr = year();
+  String s = String.valueOf(sec);
+  String m = String.valueOf(min);
+  String h = String.valueOf(hr);
+  String d = String.valueOf(day);
+  String mo = String.valueOf(mon);
+  String y = String.valueOf(yr);
+  String timestamp = y + mo + d + "-" + h + m + s;
+  return timestamp;
 }
