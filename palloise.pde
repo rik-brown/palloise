@@ -21,7 +21,7 @@ boolean savePNG = true;
 boolean makeMPEG = false;
 boolean runOnce = false;
 
-int maxFrames = 1000; //Total number of frames before exiting/making video, also equals the number of steps taken in one circular path
+int maxFrames = 500; //Total number of frames before exiting/making video, also equals the number of steps taken in one circular path
 int frameCounter;    //Starts at maxFrames and counts down
 
 PrintWriter logFile;    // Object for writing to the settings logfile
@@ -39,18 +39,18 @@ void setup() {
   //strokeCol = color(0, 0, 1, 32);
   noStroke();
   background(bkgCol);
-  columns = 9;
+  columns = 39;
   rows = columns;
   //rows = 25;
   colOffset = width/(columns*2);
   rowOffset = height/(rows*2);
-  radiusFactor = 1.0; // last:1.2
+  radiusFactor = 1.20; // last:1.2
   radiusMax = colOffset * radiusFactor;
   //println("colOffset:", colOffset, " radiusMax:",radiusMax);
-  noiseScale1 = 0.001;
-  noiseScale2 = 0.002;
-  noiseRadius1 = 100;
-  noiseRadius2 = 200;
+  noiseScale1 = 5;
+  noiseScale2 = 2;
+  noiseRadius1 = 10;
+  noiseRadius2 = 50;
   getReady();
   if (makeMPEG) {
     videoExport = new VideoExport(this, mp4File);
@@ -74,14 +74,14 @@ void draw() {
     for(int row = 0; row<rows; row++) {
       float x = map (col, 0, columns, 0, width) + colOffset;
       float y = map (row, 0, rows, 0, height) + rowOffset;
-      float xseed1 = x + noiseRadius1 * cos(stepAngle); //x-coord for circular noise path 1
-      float yseed1 = y + noiseRadius1 * sin(stepAngle); //y-coord for circular noise path 1
-      float xseed2 = x + noiseRadius2 * cos(stepAngle); //x-coord for circular noise path 2
-      float yseed2 = y + noiseRadius2 * sin(stepAngle); //y-coord for circular noise path 2
-      //float xseed1 = map (x, 0, width, 0, noiseScale1);
-      //float yseed1 = map (y, 0, width, 0, noiseScale1);
-      //float xseed2 = map (x, 0, width, 0, noiseScale2);
-      //float yseed2 = map (y, 0, width, 0, noiseScale2);
+      float xCycle1 = x + noiseRadius1 * cos(stepAngle); //x-coord for circular noise path 1
+      float yCycle1 = y + noiseRadius1 * sin(stepAngle); //y-coord for circular noise path 1
+      float xCycle2 = x + noiseRadius2 * cos(stepAngle); //x-coord for circular noise path 2
+      float yCycle2 = y + noiseRadius2 * sin(stepAngle); //y-coord for circular noise path 2
+      float xseed1 = map (xCycle1, -noiseRadius1, width+noiseRadius1, 0, noiseScale1);
+      float yseed1 = map (yCycle1, -noiseRadius1, width+noiseRadius1, 0, noiseScale1);
+      float xseed2 = map (xCycle2, -noiseRadius2, height+noiseRadius2, 0, noiseScale2);
+      float yseed2 = map (yCycle2, -noiseRadius2, height+noiseRadius2, 0, noiseScale2);
       float noise1 = noise(xseed1*noiseScale1, yseed1*noiseScale1); // value in range 0-1
       float noise2 = noise(xseed2*noiseScale2, yseed2*noiseScale2); // value in range 0-1
       float noise3 = noise(xseed1*noiseScale1, yseed2*noiseScale2); // Bonus noise!
