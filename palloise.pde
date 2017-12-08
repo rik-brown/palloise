@@ -21,7 +21,7 @@ boolean savePNG = true;
 boolean makeMPEG = false;
 boolean runOnce = false;
 
-int maxFrames = 500; //Total number of frames before exiting/making video, also equals the number of steps taken in one circular path
+int maxFrames = 800; //Total number of frames before exiting/making video, also equals the number of steps taken in one circular path
 int frameCounter;    //Starts at maxFrames and counts down
 
 PrintWriter logFile;    // Object for writing to the settings logfile
@@ -39,7 +39,7 @@ void setup() {
   //strokeCol = color(0, 0, 1, 32);
   noStroke();
   background(bkgCol);
-  columns = 19;
+  columns = 13;
   rows = columns;
   //rows = 25;
   colOffset = width/(columns*2);
@@ -68,7 +68,7 @@ void draw() {
   float bkgCycle = 1000;
   float sineWave = sin(map(frameCount % bkgCycle, 0, bkgCycle, 0, TWO_PI));
   float cosWave = cos(map(frameCount % bkgCycle, 0, bkgCycle, 0, TWO_PI));
-  radiusMax = colOffset * radiusFactor * map(sineWave, -1, 1, 0.5, 5.0);
+  radiusMax = colOffset * radiusFactor * map(sineWave, -1, 1, 2.5, 4.0);
   noiseScale1 = map(sineWave, -1, 1, 0.5, 1);
   noiseScale2 = map(sineWave, -1, 1, 2, 1);
   float bkgS = map(sineWave, -1, 1, 128, 255);
@@ -95,9 +95,11 @@ void draw() {
       float fillH = (240 +  map(noise3, 0, 1, 110, 130))%360;
       //float fillH = 0;
       //float fillS = map(noise3, 0, 1, 0, 255);
-      float fillS = 255; 
-      float fillB = map(noise3, 1, 0, 64, 255);
+      //float fillS = 255; 
+      float fillS = map(noise3, 1, 0, 128, 255);
+      float fillB = map(noise3, 1, 0, 192, 255);
       //float fillA = map(noise1, 0, 1, 0, 255);
+      //float fillB = 255;
       float fillA = 255;
       fillCol = color(fillH, fillS, fillB,fillA);
       fillCol2 = color(fillH+120, fillS, fillB,fillA);
