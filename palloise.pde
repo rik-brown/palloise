@@ -39,15 +39,15 @@ void setup() {
   //strokeCol = color(0, 0, 1, 32);
   noStroke();
   background(bkgCol);
-  columns = 39;
+  columns = 19;
   rows = columns;
   //rows = 25;
   colOffset = width/(columns*2);
   rowOffset = height/(rows*2);
-  radiusFactor = 1.20; // last:1.2
+  radiusFactor = 1.50; // last:1.2
   radiusMax = colOffset * radiusFactor;
   //println("colOffset:", colOffset, " radiusMax:",radiusMax);
-  noiseScale1 = 5;
+  noiseScale1 = 1;
   noiseScale2 = 2;
   noiseRadius1 = 10;
   noiseRadius2 = 50;
@@ -67,6 +67,10 @@ void draw() {
   float stepAngle = map(currStep, 0, maxFrames, 0, TWO_PI);
   float bkgCycle = 1000;
   float sineWave = sin(map(frameCount % bkgCycle, 0, bkgCycle, 0, TWO_PI));
+  float cosWave = cos(map(frameCount % bkgCycle, 0, bkgCycle, 0, TWO_PI));
+  radiusMax = colOffset * radiusFactor * map(sineWave, -1, 1, 0.5, 5.0);
+  noiseScale1 = map(sineWave, -1, 1, 0.5, 1);
+  noiseScale2 = map(sineWave, -1, 1, 2, 1);
   float bkgS = map(sineWave, -1, 1, 128, 255);
   bkgCol = color (240, 255, bkgS);
   background(bkgCol);
@@ -86,7 +90,7 @@ void draw() {
       float noise2 = noise(xseed2*noiseScale2, yseed2*noiseScale2); // value in range 0-1
       float noise3 = noise(xseed1*noiseScale1, yseed2*noiseScale2); // Bonus noise!
       float rx = map(noise1, 0, 1, 0, radiusMax);
-      float ry = map(noise1, 0, 1, 0, radiusMax);
+      float ry = map(noise2, 0, 1, 0, radiusMax);
       //float fillH = map(noise1, 0, 1, 0, 255);
       float fillH = (240 +  map(noise3, 0, 1, 110, 130))%360;
       //float fillH = 0;
@@ -104,9 +108,11 @@ void draw() {
       pushMatrix();
       translate(x, y);
       float angle = map(noise3, 0, 1, 0, TWO_PI);
-      rotate(stepAngle);
-      ellipse(0, 0, rx, ry);
-      if (noise1 > 0.3) {fill(fillCol2);} else {fill(fillCol);} 
+      rotate(angle);
+      //ellipse(0, 0, rx, ry);
+      triangle(0, -ry, (rx*0.866), (ry*0.5) ,-(rx*0.866), (ry*0.5));
+      //if (noise1 > 0.3) {fill(fillCol2);} else {fill(fillCol);} 
+      //if (noise1 > 0.6) {ellipse(0, 0, rx, ry);} else {triangle(0, -ry, (rx*0.866), (ry*0.5) ,-(rx*0.866), (ry*0.5));}
       //noStroke();
       //triangle(0, -ry, (rx*0.866), (ry*0.5) ,-(rx*0.866), (ry*0.5));
       //rect(0, 0, rx, ry);
