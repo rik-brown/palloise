@@ -4,7 +4,7 @@ import com.hamoid.*;     // For creating .mp4 animations from output images
 VideoExport videoExport; // A VideoExport object called 'videoExport' (used when exporting video)
 
 int columns, rows;
-float colOffset, rowOffset, noiseScale1, noiseScale2, noiseRadius1, noiseRadius2, radiusFactor, radiusMax;
+float colOffset, rowOffset, noise1Scale, noise2Scale, noise1Radius, noise2Radius, radiusFactor, radiusMax;
 color bkgCol, fillCol, strokeCol, fillCol2;
 
 int batch = 1;
@@ -47,10 +47,10 @@ void setup() {
   radiusFactor = 1.50; // last:1.2
   radiusMax = colOffset * radiusFactor;
   //println("colOffset:", colOffset, " radiusMax:",radiusMax);
-  noiseScale1 = 1;
-  noiseScale2 = 2;
-  noiseRadius1 = 10;
-  noiseRadius2 = 50;
+  noise1Scale = 1;
+  noise2Scale = 2;
+  noise1Radius = 10;
+  noise2Radius = 50;
   getReady();
   if (makeMPEG) {
     videoExport = new VideoExport(this, mp4File);
@@ -65,30 +65,32 @@ void draw() {
   if (frameCounter >= maxFrames && runOnce) {shutdown();} // Comment this out to run forever or leave in to run once
   int currStep = frameCount%maxFrames;
   float stepAngle = map(currStep, 0, maxFrames, 0, TWO_PI);
+  float noise1Seedz = map(currStep, 0, maxFrames, 0, noise1Scale);
+  float noise2Seedz = map(currStep, 0, maxFrames, 0, noise2Scale);
   float bkgCycle = 1000;
   float sineWave = sin(map(frameCount % bkgCycle, 0, bkgCycle, 0, TWO_PI));
   float cosWave = cos(map(frameCount % bkgCycle, 0, bkgCycle, 0, TWO_PI));
-  radiusMax = colOffset * radiusFactor * map(sineWave, -1, 1, 2.5, 4.0);
-  noiseScale1 = map(sineWave, -1, 1, 0.5, 1);
-  noiseScale2 = map(sineWave, -1, 1, 2, 1);
+  //radiusMax = colOffset * radiusFactor * map(sineWave, -1, 1, 2.5, 4.0); // Cyclic radiusMax
+  //noise1Scale = map(sineWave, -1, 1, 0.5, 1); // Cyclic noise1Scale
+  //noise2Scale = map(sineWave, -1, 1, 2, 1); // Cyclic noise2Scale
   float bkgS = map(sineWave, -1, 1, 128, 255);
   bkgCol = color (240, 255, bkgS);
   background(bkgCol);
   for(int col = 0; col<columns; col++) {
     for(int row = 0; row<rows; row++) {
-      float x = map (col, 0, columns, 0, width) + colOffset;
-      float y = map (row, 0, rows, 0, height) + rowOffset;
-      float xCycle1 = x + noiseRadius1 * cos(stepAngle); //x-coord for circular noise path 1
-      float yCycle1 = y + noiseRadius1 * sin(stepAngle); //y-coord for circular noise path 1
-      float xCycle2 = x + noiseRadius2 * cos(stepAngle); //x-coord for circular noise path 2
-      float yCycle2 = y + noiseRadius2 * sin(stepAngle); //y-coord for circular noise path 2
-      float xseed1 = map (xCycle1, -noiseRadius1, width+noiseRadius1, 0, noiseScale1);
-      float yseed1 = map (yCycle1, -noiseRadius1, width+noiseRadius1, 0, noiseScale1);
-      float xseed2 = map (xCycle2, -noiseRadius2, height+noiseRadius2, 0, noiseScale2);
-      float yseed2 = map (yCycle2, -noiseRadius2, height+noiseRadius2, 0, noiseScale2);
-      float noise1 = noise(xseed1*noiseScale1, yseed1*noiseScale1); // value in range 0-1
-      float noise2 = noise(xseed2*noiseScale2, yseed2*noiseScale2); // value in range 0-1
-      float noise3 = noise(xseed1*noiseScale1, yseed2*noiseScale2); // Bonus noise!
+      float posX = map (col, 0, columns, 0, width) + colOffset;
+      float posY = map (row, 0, rows, 0, height) + rowOffset;
+      float noise1Pathx = posX + noise1Radius * cos(stepAngle); //x-coord for circular noise path 1
+      float noise1Pathy = posY + noise1Radius * sin(stepAngle); //y-coord for circular noise path 1
+      float noise2Pathx = posX + noise2Radius * cos(stepAngle); //x-coord for circular noise path 2
+      float noise2Pathy = posY + noise2Radius * sin(stepAngle); //y-coord for circular noise path 2
+      float noise1Seedx = map (noise1Pathx, -noise1Radius, width+noise1Radius, 0, noise1Scale); //Needs to be improved if dynamic NoiseRadius (absolute zero if noise seed always >0)
+      float noise1Seedy = map (noise1Pathy, -noise1Radius, width+noise1Radius, 0, noise1Scale);
+      float noise2Seedx = map (noise2Pathx, -noise2Radius, height+noise2Radius, 0, noise2Scale);
+      float noise2Seedy = map (noise2Pathy, -noise2Radius, height+noise2Radius, 0, noise2Scale);
+      float noise1 = noise(noise1Seedx, noise1Seedy, noise1Seedz); // value in range 0-1
+      float noise2 = noise(noise2Seedx, noise2Seedy, noise2Seedz); // value in range 0-1
+      float noise3 = noise(noise1Seedx*noise1Scale, noise2Seedy*noise2Scale); // Bonus noise!
       float rx = map(noise1, 0, 1, 0, radiusMax);
       float ry = map(noise2, 0, 1, 0, radiusMax);
       //float fillH = map(noise1, 0, 1, 0, 255);
@@ -108,7 +110,7 @@ void draw() {
       //if (noise2 > 0.5) {fill(fillCol2);} else {fill(fillCol);}
       //stroke(strokeCol);
       pushMatrix();
-      translate(x, y);
+      translate(posX, posY);
       float angle = map(noise3, 0, 1, 0, TWO_PI);
       rotate(angle);
       //ellipse(0, 0, rx, ry);
@@ -148,8 +150,8 @@ void logStart() {
   logFile.println("columns = " + columns);
   logFile.println("rows = " + rows);
   logFile.println("radiusFactor = " + radiusFactor);
-  logFile.println("noiseScale1 = " + noiseScale1);
-  logFile.println("noiseScale2 = " + noiseScale2);
+  logFile.println("noise1Scale = " + noise1Scale);
+  logFile.println("noise2Scale = " + noise2Scale);
 }
 
 void logEnd() {
