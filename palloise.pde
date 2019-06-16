@@ -21,13 +21,16 @@ boolean savePNG = true;
 boolean makeMPEG = false;
 boolean runOnce = false;
 
-int maxFrames = 800; //Total number of frames before exiting/making video, also equals the number of steps taken in one circular path
+int maxFrames = 50; //Total number of frames before exiting/making video, also equals the number of steps taken in one circular path
 int frameCounter;    //Starts at maxFrames and counts down
+float myLoopingNoiseArray[];
+float bkgCycle = 1000;  
+
 
 PrintWriter logFile;    // Object for writing to the settings logfile
 
 void setup() {
-  //frameRate(30);
+  frameRate(10);
   //size(512,512);
   size(1024,1024);
   //fullScreen();
@@ -51,6 +54,9 @@ void setup() {
   noise2Scale = 2;
   noise1Radius = 10;
   noise2Radius = 50;
+  
+  myLoopingNoiseArray = new float[maxFrames];
+  
   getReady();
   if (makeMPEG) {
     videoExport = new VideoExport(this, mp4File);
@@ -62,12 +68,15 @@ void setup() {
 }
 
 void draw() {
+  
   if (frameCounter >= maxFrames && runOnce) {shutdown();} // Comment this out to run forever or leave in to run once
   int currStep = frameCount%maxFrames;
   float stepAngle = map(currStep, 0, maxFrames, 0, TWO_PI);
-  float noise1Seedz = map(currStep, 0, maxFrames, 0, noise1Scale);
+  //float noise1Seedz = map(currStep, 0, maxFrames, 0, noise1Scale); // First attempt - elevator only goes up
+  float cosWavez = cos(stepAngle + PI);
+  float noise1Seedz = map(cosWavez, -1, 1, 0, noise1Scale);
   float noise2Seedz = map(currStep, 0, maxFrames, 0, noise2Scale);
-  float bkgCycle = 1000;
+  
   float sineWave = sin(map(frameCount % bkgCycle, 0, bkgCycle, 0, TWO_PI));
   float cosWave = cos(map(frameCount % bkgCycle, 0, bkgCycle, 0, TWO_PI));
   //radiusMax = colOffset * radiusFactor * map(sineWave, -1, 1, 2.5, 4.0); // Cyclic radiusMax
@@ -112,7 +121,7 @@ void draw() {
       pushMatrix();
       translate(posX, posY);
       float angle = map(noise3, 0, 1, 0, TWO_PI);
-      rotate(angle);
+      //rotate(angle);
       //ellipse(0, 0, rx, ry);
       triangle(0, -ry, (rx*0.866), (ry*0.5) ,-(rx*0.866), (ry*0.5));
       //if (noise1 > 0.3) {fill(fillCol2);} else {fill(fillCol);} 
@@ -124,6 +133,24 @@ void draw() {
       popMatrix();
     }
   }
+  float noiseAtLoc = map(cosWavez, -1, 1, 0, height);
+  myLoopingNoiseArray[currStep] = noiseAtLoc;
+  noFill(); 
+  stroke(255); 
+  beginShape(); 
+  for (int i=0; i<maxFrames; i++) {
+    float nx = map(i, 0, maxFrames-1, 0, width); 
+    float ny = myLoopingNoiseArray[i];
+    vertex(nx, ny);
+  }
+  endShape();
+  
+  noStroke(); 
+  fill(255); 
+  float ex = map(currStep, 0, maxFrames-1, 0, width); 
+  ellipse(ex, noiseAtLoc, 7, 7);
+  
+  
   frameCounter ++;
   println(frameCounter);
   if (makeMPEG) {videoExport.saveFrame();} // If in MPEG mode, save one frame per draw cycle to the file
